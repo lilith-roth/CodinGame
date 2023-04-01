@@ -1,0 +1,10 @@
+[package]
+name = "CodinGame"
+description = "My repository for CodinGame!"
+authors = ["Dominique Roth <dominik@roth.systems>"]
+homepage = "https://roth.systems/"
+repository = "https://github.com/Dom-Roth/CodinGame"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
