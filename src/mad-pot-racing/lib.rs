@@ -45,8 +45,9 @@ fn main() {
             last_distance = next_checkpoint_dist;
             continue;
         }
-        if last_distance < next_checkpoint_dist || next_checkpoint_angle > 90 || next_checkpoint_angle < -90 {
-            thrust = 20;
+        if /*last_distance < next_checkpoint_dist || */next_checkpoint_angle > 80 || next_checkpoint_angle < -80 {
+
+            thrust = (next_checkpoint_angle - 80).abs();
         }
         last_distance = next_checkpoint_dist;
         println!("{} {} {}", next_checkpoint_x, next_checkpoint_y, thrust);
