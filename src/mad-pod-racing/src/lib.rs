@@ -52,8 +52,8 @@ fn main() {
         }
         if next_checkpoint_dist < 2000 {
             // if next_checkpoint_dist < 250 { thrust = 0 } else { thrust = next_checkpoint_dist / 60; }
-            if next_checkpoint_angle > 30 {
-                thrust = 5;
+            if next_checkpoint_angle > 30 || next_checkpoint_angle < -20 {
+                thrust = 5; // ToDo: Try increase!
             } else {
                 thrust = cmp::max(100 % next_checkpoint_dist, min_speed);
             }
