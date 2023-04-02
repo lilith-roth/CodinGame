@@ -40,7 +40,7 @@ fn main() {
         let mut thrust = 100;
         if next_checkpoint_dist < 2500 {
             thrust = next_checkpoint_dist / 25;
-        } else {
+        } else if next_checkpoint_dist > 5000 {
             println!("{} {} {}", next_checkpoint_x, next_checkpoint_y, String::from("BOOST"));
             last_distance = next_checkpoint_dist;
             continue;
