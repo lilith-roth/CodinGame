@@ -38,18 +38,18 @@ fn main() {
         // followed by the power (0 <= thrust <= 100)
         // i.e.: "x y thrust"
         let mut thrust = 100;
-        if next_checkpoint_dist < 2500 {
-            thrust = next_checkpoint_dist / 25;
+        if next_checkpoint_dist < 3500 {
+            if next_checkpoint_dist < 250 { thrust = 5 } else { thrust = next_checkpoint_dist / 35; }
         } else if next_checkpoint_dist > 5000 {
             println!("{} {} {}", next_checkpoint_x, next_checkpoint_y, String::from("BOOST"));
             last_distance = next_checkpoint_dist;
             continue;
         }
         if /*last_distance < next_checkpoint_dist || */next_checkpoint_angle > 80 || next_checkpoint_angle < -80 {
-
             thrust = (next_checkpoint_angle - 80).abs();
         }
         last_distance = next_checkpoint_dist;
+        if thrust > 100 { thrust = 100; }
         println!("{} {} {}", next_checkpoint_x, next_checkpoint_y, thrust);
     }
 }
