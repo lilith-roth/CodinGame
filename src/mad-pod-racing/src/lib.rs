@@ -39,17 +39,24 @@ fn main() {
         // To debug: eprintln!("Debug message...");
 
         let mut thrust = 100;
+        let min_speed = 25;
 
-        if !(-60..=60).contains(&next_checkpoint_angle) {
-            thrust = 100 % next_checkpoint_angle;
-        } else if next_checkpoint_dist >= 5000 && (next_checkpoint_angle < 30 || next_checkpoint_angle > -30) {
+        if next_checkpoint_angle != 0
+            && (next_checkpoint_angle > 60 || next_checkpoint_angle < -60) {
+            thrust = cmp::max(100 % next_checkpoint_angle, min_speed);
+        } else if next_checkpoint_dist >= 7000 &&
+            (next_checkpoint_angle < 45 || next_checkpoint_angle > -45) {
             // BOOST!
             println!("{} {} BOOST", next_checkpoint_x, next_checkpoint_y);
             continue;
         }
         if next_checkpoint_dist < 1500 {
             // if next_checkpoint_dist < 250 { thrust = 0 } else { thrust = next_checkpoint_dist / 60; }
-            thrust = cmp::max(next_checkpoint_dist / 250, 20);
+            if next_checkpoint_angle > 30 {
+                thrust = 5;
+            } else {
+                thrust = cmp::max(100 % next_checkpoint_dist, min_speed);
+            }
         }
 
         // You have to output the target position
