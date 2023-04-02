@@ -142,5 +142,5 @@ fn get_max_distance_checkpoint(checkpoints: &Vec<Checkpoint>) -> Option<Checkpoi
 /// Calculates the pythagorean theorem
 /// c^2 = a^2 + b^2 => c = sqrt(a^2 + b^2)
 fn pythagorean_theorem(a: i32, b: i32) -> i32 {
-    ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32;
+    return ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32;
 }
