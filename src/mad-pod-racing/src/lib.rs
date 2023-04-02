@@ -40,16 +40,16 @@ fn main() {
 
         let mut thrust = 100;
 
-        if !(-45..=45).contains(&next_checkpoint_angle) {
-            thrust = 10;
-        } else if next_checkpoint_dist >= 5000 {
+        if !(-60..=60).contains(&next_checkpoint_angle) {
+            thrust = 100 % next_checkpoint_angle;
+        } else if next_checkpoint_dist >= 5000 && (next_checkpoint_angle < 30 || next_checkpoint_angle > -30) {
             // BOOST!
             println!("{} {} BOOST", next_checkpoint_x, next_checkpoint_y);
             continue;
         }
-        if next_checkpoint_dist < 2000 {
+        if next_checkpoint_dist < 1500 {
             // if next_checkpoint_dist < 250 { thrust = 0 } else { thrust = next_checkpoint_dist / 60; }
-            thrust = cmp::max(next_checkpoint_dist / 200, 20);
+            thrust = cmp::max(next_checkpoint_dist / 250, 20);
         }
 
         // You have to output the target position
