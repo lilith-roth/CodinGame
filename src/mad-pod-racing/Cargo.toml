@@ -1,6 +1,6 @@
 [package]
-name = "CodinGame"
-description = "My repository for CodinGame!"
+name = "CodinGame-Mad-Pod-Racing"
+description = "Code for the Mad Pod Racing game"
 authors = ["Dominique Roth <dominik@roth.systems>"]
 homepage = "https://roth.systems/"
 repository = "https://github.com/Dom-Roth/CodinGame"
