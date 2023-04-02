@@ -64,8 +64,8 @@ fn main() {
                             for (i, checkpoint) in checkpoints.iter_mut().enumerate() {
                                 if i == 0 { continue; }
                                 if checkpoint.distance_last_checkpoint == 0 {
-                                    let distance_x = checkpoints_temp[i - 1].position_x - &checkpoint.position_x;
-                                    let distance_y = checkpoints_temp[i - 1].position_y - &checkpoint.position_y;
+                                    let distance_x = checkpoints_temp[i - 1].position_x - checkpoint.position_x;
+                                    let distance_y = checkpoints_temp[i - 1].position_y - checkpoint.position_y;
                                     let distance = pythagorean_theorem(distance_x, distance_y);
                                     checkpoint.distance_last_checkpoint = distance;
                                 }
@@ -79,7 +79,7 @@ fn main() {
                             None => {
                                 checkpoints.extend([new_checkpoint]);
                             }
-                            _ => { assert!(false, "Should not happen!"); }
+                            _ => { unreachable!("Should not happen!"); }
                         }
                     }
                 } else {
@@ -106,15 +106,13 @@ fn main() {
         if distances_calculated {
             let max_dist_checkpoint = get_max_distance_checkpoint(&checkpoints);
             eprintln!("max_dist: {:?}", max_dist_checkpoint);
-            match max_dist_checkpoint {
-                Some(checkpoint) => {
-                    if checkpoint.position_x == next_checkpoint_x
+            if let Some(checkpoint) = max_dist_checkpoint {
+                if checkpoint.position_x == next_checkpoint_x
                     && checkpoint.position_y == next_checkpoint_y {
                     println!("{} {} {}", next_checkpoint_x, next_checkpoint_y, String::from("BOOST"));
                     last_distance = next_checkpoint_dist;
                     continue;
-                }}
-                None => {}
+                }
             }
         }
         if /*last_distance < next_checkpoint_dist || */next_checkpoint_angle > 45 || next_checkpoint_angle < -45 {
@@ -144,5 +142,5 @@ fn get_max_distance_checkpoint(checkpoints: &Vec<Checkpoint>) -> Option<Checkpoi
 /// Calculates the pythagorean theorem
 /// c^2 = a^2 + b^2 => c = sqrt(a^2 + b^2)
 fn pythagorean_theorem(a: i32, b: i32) -> i32 {
-    return ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32;
+    ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32;
 }
