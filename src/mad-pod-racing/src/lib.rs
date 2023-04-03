@@ -11,14 +11,14 @@ struct Checkpoint {
     distance_last_checkpoint: i32,
 }
 
-struct pod_parameters {
+struct PodParameters {
     thrust: i32,
-    correction_angle:i32,
-    min_correction_speed:i32,
-    max_correction_speed:i32,
-    multiplier_correction_speed:f32,
-    boost_angle:i32,
-    boost_distance:i32,
+    correction_angle: i32,
+    min_correction_speed: i32,
+    max_correction_speed: i32,
+    multiplier_correction_speed: f32,
+    boost_angle: i32,
+    boost_distance: i32,
     checkpoint_close_proximity_range: i32,
     checkpoint_close_proximity_correction_angle: i32,
     checkpoint_close_proximity_correction_speed: i32,
@@ -50,17 +50,17 @@ fn main() {
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        let parameters = pod_parameters {
+        let parameters = PodParameters {
             thrust: 100,
             correction_angle: 50,
             min_correction_speed: 25,
             max_correction_speed: 75,
             multiplier_correction_speed: 0.75,
-            boost_angle: 25,
+            boost_angle: 30,
             boost_distance: 7000,
-            checkpoint_close_proximity_range: 1500,
+            checkpoint_close_proximity_range: 2000,
             checkpoint_close_proximity_correction_angle: 30,
-            checkpoint_close_proximity_correction_speed: 10,
+            checkpoint_close_proximity_correction_speed: 15,
         };
         game_loop(
             parameters,
@@ -71,22 +71,22 @@ fn main() {
             next_checkpoint_dist,
             next_checkpoint_angle,
             opponent_x,
-            opponent_y
+            opponent_y,
         );
     }
 }
 
 #[allow(clippy::too_many_arguments)]
 fn game_loop(
-    mut parameters: pod_parameters,
+    mut parameters: PodParameters,
     player_x: i32,
     player_y: i32,
-    next_checkpoint_x:i32,
-    next_checkpoint_y:i32,
+    next_checkpoint_x: i32,
+    next_checkpoint_y: i32,
     next_checkpoint_dist: i32,
     next_checkpoint_angle: i32,
     opponent_x: i32,
-    opponent_y: i32
+    opponent_y: i32,
 ) {
 
     // Thrust adjustments if not facing correct direction
