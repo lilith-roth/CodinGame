@@ -1,14 +1,20 @@
 use std::{cmp, io, num};
+use std::cell::RefCell;
+use std::rc::Weak;
 
 macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
 
-#[derive(Clone, Copy, Debug)]
-struct Checkpoint {
-    position_x: i32,
-    position_y: i32,
-    distance_last_checkpoint: i32,
+struct GameParameters {
+    player_x: i32,
+    player_y: i32,
+    next_checkpoint_x: i32,
+    next_checkpoint_y: i32,
+    next_checkpoint_dist: i32,
+    next_checkpoint_angle: i32,
+    opponent_x: i32,
+    opponent_y: i32
 }
 
 struct PodParameters {
@@ -24,11 +30,100 @@ struct PodParameters {
     checkpoint_close_proximity_correction_speed: i32,
 }
 
+#[derive(Clone, Copy, Debug)]
+struct Checkpoint {
+    position_x: i32,
+    position_y: i32,
+    distance_prev_checkpoint: i32
+}
+
+impl Checkpoint {
+    fn handle_checkpoint_saving(
+        checkpoints: Vec<Checkpoint>,
+        mut checkpoints_mapped: bool,
+        next_checkpoint_x: i32,
+        next_checkpoint_y: i32
+    ) -> (Vec<Checkpoint>, bool) {
+        eprintln!("Checkpoints: {:?}", &checkpoints);
+        let mut new_checkpoints = checkpoints.to_vec();
+        if let Some(checkpoint) = &new_checkpoints.iter()
+            .find(|&&x| x.position_x == next_checkpoint_x && x.position_y == next_checkpoint_y) {
+            if checkpoints.len() > 1 && !checkpoints_mapped && checkpoint.distance_prev_checkpoint == 0 {
+                let prev_checkpoint = &new_checkpoints.last().unwrap();
+                let distance = pythagorean_theorem(prev_checkpoint.position_x, prev_checkpoint.position_y);
+                new_checkpoints.first_mut().unwrap().distance_prev_checkpoint = distance;
+                // If we come here, we're back at the first checkpoint, therefore finalizing mapping.
+                checkpoints_mapped = true;
+            }
+        } else {
+            let prev_checkpoint = new_checkpoints.last().unwrap_or(
+                // If we want to save the first checkpoint, we'll calculate a distance of 0,
+                // and fix that in above's if statement after collecting all checkpoints.
+                &Checkpoint {
+                    position_x: 0,
+                    position_y: 0,
+                    distance_prev_checkpoint: 0,
+                }
+            );
+            let distance_prev_checkpoint = pythagorean_theorem(prev_checkpoint.position_x, prev_checkpoint.position_y);
+            new_checkpoints.push(Checkpoint {
+                position_x: next_checkpoint_x,
+                position_y: next_checkpoint_y,
+                distance_prev_checkpoint
+            });
+        }
+        (new_checkpoints, checkpoints_mapped)
+    }
+}
+
+/// Calculates the pythagorean theorem
+/// c^2 = a^2 + b^2 => c = sqrt(a^2 + b^2)
+fn pythagorean_theorem(a: i32, b: i32) -> i32 {
+    return ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32;
+}
+
+fn get_max_distance_checkpoint(checkpoints: &Vec<Checkpoint>) -> Option<Checkpoint> {
+    let mut highest_distance: (Option<Checkpoint>, i32) = (None, 0);
+    for checkpoint in checkpoints {
+        if checkpoint.distance_prev_checkpoint > highest_distance.1 {
+            highest_distance = (Some(*checkpoint), checkpoint.distance_prev_checkpoint);
+        }
+    }
+    highest_distance.0
+}
+
+/// Checking if we're on the longest straight to the next checkpoint
+///
+/// Previous:
+/// if game_paramers.next_checkpoint_dist >= pod_parameters.boost_distance
+///         && (game_paramers.next_checkpoint_angle < pod_parameters.boost_angle
+///         || game_paramers.next_checkpoint_angle > -pod_parameters.boost_angle) {
+fn should_boost (
+    checkpoints: &Vec<Checkpoint>,
+    checkpoints_mapped: bool,
+    game_parameters: &GameParameters,
+    pod_parameters: &PodParameters
+) -> bool {
+    if let Some(checkpoint) = get_max_distance_checkpoint(&checkpoints) {
+        if checkpoints.len() > 1
+            && checkpoints_mapped
+            && checkpoint.distance_prev_checkpoint != 0
+            && (game_parameters.next_checkpoint_angle < pod_parameters.boost_angle || game_parameters.next_checkpoint_angle > -pod_parameters.boost_angle)
+            && checkpoint.position_x == game_parameters.next_checkpoint_x
+            && checkpoint.position_y == game_parameters.next_checkpoint_y {
+            return true;
+        }
+    }
+    return false;
+}
+
 /**
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
  **/
 fn main() {
+    let mut checkpoints: Vec<Checkpoint> = vec![];
+    let mut checkpoints_mapped: bool = false;
     // game loop
     loop {
         let mut input_line = String::new();
@@ -50,7 +145,17 @@ fn main() {
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        let parameters = PodParameters {
+        let game_parameters = GameParameters{
+            player_x: x,
+            player_y: y,
+            next_checkpoint_x,
+            next_checkpoint_y,
+            next_checkpoint_dist,
+            next_checkpoint_angle,
+            opponent_x,
+            opponent_y,
+        };
+        let pod_parameters = PodParameters {
             thrust: 100,
             correction_angle: 50,
             min_correction_speed: 25,
@@ -62,63 +167,70 @@ fn main() {
             checkpoint_close_proximity_correction_angle: 30,
             checkpoint_close_proximity_correction_speed: 15,
         };
-        game_loop(
-            parameters,
-            x,
-            y,
-            next_checkpoint_x,
-            next_checkpoint_y,
-            next_checkpoint_dist,
-            next_checkpoint_angle,
-            opponent_x,
-            opponent_y,
+        let (new_checkpoints, new_checkpoints_mapped) = game_loop(
+            game_parameters,
+            pod_parameters,
+            checkpoints.to_vec(),
+            checkpoints_mapped
         );
+        checkpoints = new_checkpoints;
+        checkpoints_mapped = new_checkpoints_mapped;
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+/// Handles main game loop
+///
+/// # Arguments
+///
+/// * `game_parameters`:
+/// * `pod_parameters`:
+/// * `previous_checkpoints`:
+/// * `checkpoints_mapped`:
+///
+/// returns: (Vec<Checkpoint, Global>, bool)
 fn game_loop(
-    mut parameters: PodParameters,
-    player_x: i32,
-    player_y: i32,
-    next_checkpoint_x: i32,
-    next_checkpoint_y: i32,
-    next_checkpoint_dist: i32,
-    next_checkpoint_angle: i32,
-    opponent_x: i32,
-    opponent_y: i32,
-) {
+    game_parameters: GameParameters,
+    mut pod_parameters: PodParameters,
+    previous_checkpoints: Vec<Checkpoint>,
+    checkpoints_mapped: bool,
+) -> (Vec<Checkpoint>, bool) {
+    eprintln!("Checkpoints mapped {:?}", checkpoints_mapped);
+    let (checkpoints, checkpoint_map_status) = Checkpoint::handle_checkpoint_saving(
+        previous_checkpoints,
+        checkpoints_mapped,
+        game_parameters.next_checkpoint_x,
+        game_parameters.next_checkpoint_y
+    );
 
     // Thrust adjustments if not facing correct direction
-    if next_checkpoint_angle > parameters.correction_angle
-        || next_checkpoint_angle < -parameters.correction_angle {
-        parameters.thrust = cmp::min(
+    if game_parameters.next_checkpoint_angle > pod_parameters.correction_angle
+        || game_parameters.next_checkpoint_angle < -pod_parameters.correction_angle {
+        pod_parameters.thrust = cmp::min(
             cmp::max(
-                ((next_checkpoint_angle % 100).abs() as f32
-                    * parameters.multiplier_correction_speed).round() as i32,
-                parameters.min_correction_speed,
+                ((game_parameters.next_checkpoint_angle % 100).abs() as f32
+                    * pod_parameters.multiplier_correction_speed).round() as i32,
+                pod_parameters.min_correction_speed,
             ),
-            parameters.max_correction_speed,
+            pod_parameters.max_correction_speed,
         );
-    } else if next_checkpoint_dist >= parameters.boost_distance
-        && (next_checkpoint_angle < parameters.boost_angle
-        || next_checkpoint_angle > -parameters.boost_angle) {
+    } else if should_boost(&checkpoints, checkpoints_mapped, &game_parameters, &pod_parameters) {
         // BOOST
-        println!("{} {} BOOST", next_checkpoint_x, next_checkpoint_y);
-        return;
+        eprintln!("BOOST!");
+        println!("{} {} BOOST", game_parameters.next_checkpoint_x, game_parameters.next_checkpoint_y);
+        return (checkpoints, checkpoint_map_status);
     }
 
     // Thrust adjustments if close to checkpoint
-    if next_checkpoint_dist < parameters.checkpoint_close_proximity_range {
+    if game_parameters.next_checkpoint_dist < pod_parameters.checkpoint_close_proximity_range {
         // if next_checkpoint_dist < 250 { thrust = 0 } else { thrust = next_checkpoint_dist / 60; }
         // 30 => 16,649
-        if next_checkpoint_angle > parameters.checkpoint_close_proximity_correction_angle
-            || next_checkpoint_angle < -parameters.checkpoint_close_proximity_correction_angle {
-            parameters.thrust = parameters.checkpoint_close_proximity_correction_speed;
+        if game_parameters.next_checkpoint_angle > pod_parameters.checkpoint_close_proximity_correction_angle
+            || game_parameters.next_checkpoint_angle < -pod_parameters.checkpoint_close_proximity_correction_angle {
+            pod_parameters.thrust = pod_parameters.checkpoint_close_proximity_correction_speed;
         } else {
-            parameters.thrust = cmp::max(
-                (next_checkpoint_dist & 100).abs(),
-                parameters.min_correction_speed,
+            pod_parameters.thrust = cmp::max(
+                (game_parameters.next_checkpoint_dist & 100).abs(),
+                pod_parameters.min_correction_speed,
             );
         }
     }
@@ -126,5 +238,6 @@ fn game_loop(
     // You have to output the target position
     // followed by the power (0 <= thrust <= 100)
     // i.e.: "x y thrust"
-    println!("{} {} {}", next_checkpoint_x, next_checkpoint_y, parameters.thrust);
+    println!("{} {} {}", game_parameters.next_checkpoint_x, game_parameters.next_checkpoint_y, pod_parameters.thrust);
+    (checkpoints, checkpoint_map_status)
 }
