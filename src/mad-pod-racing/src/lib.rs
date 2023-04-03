@@ -1,6 +1,4 @@
-use std::{cmp, io, num};
-use std::cell::RefCell;
-use std::rc::Weak;
+use std::{cmp, io};
 
 macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
@@ -14,7 +12,7 @@ struct GameParameters {
     next_checkpoint_dist: i32,
     next_checkpoint_angle: i32,
     opponent_x: i32,
-    opponent_y: i32
+    opponent_y: i32,
 }
 
 struct PodParameters {
@@ -34,7 +32,7 @@ struct PodParameters {
 struct Checkpoint {
     position_x: i32,
     position_y: i32,
-    distance_prev_checkpoint: i32
+    distance_prev_checkpoint: i32,
 }
 
 impl Checkpoint {
@@ -42,7 +40,7 @@ impl Checkpoint {
         checkpoints: Vec<Checkpoint>,
         mut checkpoints_mapped: bool,
         next_checkpoint_x: i32,
-        next_checkpoint_y: i32
+        next_checkpoint_y: i32,
     ) -> (Vec<Checkpoint>, bool) {
         eprintln!("Checkpoints: {:?}", &checkpoints);
         let mut new_checkpoints = checkpoints.to_vec();
@@ -69,7 +67,7 @@ impl Checkpoint {
             new_checkpoints.push(Checkpoint {
                 position_x: next_checkpoint_x,
                 position_y: next_checkpoint_y,
-                distance_prev_checkpoint
+                distance_prev_checkpoint,
             });
         }
         (new_checkpoints, checkpoints_mapped)
@@ -99,11 +97,11 @@ fn get_max_distance_checkpoint(checkpoints: &Vec<Checkpoint>) -> Option<&Checkpo
 /// if game_paramers.next_checkpoint_dist >= pod_parameters.boost_distance
 ///         && (game_paramers.next_checkpoint_angle < pod_parameters.boost_angle
 ///         || game_paramers.next_checkpoint_angle > -pod_parameters.boost_angle) {
-fn should_boost (
+fn should_boost(
     checkpoints: &Vec<Checkpoint>,
     checkpoints_mapped: bool,
     game_parameters: &GameParameters,
-    pod_parameters: &PodParameters
+    pod_parameters: &PodParameters,
 ) -> bool {
     if let Some(checkpoint) = get_max_distance_checkpoint(&checkpoints) {
         if checkpoints.len() > 1
@@ -147,7 +145,7 @@ fn main() {
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        let game_parameters = GameParameters{
+        let game_parameters = GameParameters {
             player_x: x,
             player_y: y,
             next_checkpoint_x,
@@ -173,7 +171,7 @@ fn main() {
             game_parameters,
             pod_parameters,
             checkpoints.to_vec(),
-            checkpoints_mapped
+            checkpoints_mapped,
         );
         checkpoints = new_checkpoints;
         checkpoints_mapped = new_checkpoints_mapped;
@@ -201,7 +199,7 @@ fn game_loop(
         previous_checkpoints,
         checkpoints_mapped,
         game_parameters.next_checkpoint_x,
-        game_parameters.next_checkpoint_y
+        game_parameters.next_checkpoint_y,
     );
     eprintln!("Checkpoint 0: {:?}", &checkpoints[0].distance_prev_checkpoint);
 
