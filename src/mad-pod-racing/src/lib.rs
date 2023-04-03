@@ -11,6 +11,19 @@ struct Checkpoint {
     distance_last_checkpoint: i32,
 }
 
+struct pod_parameters {
+    thrust: i32,
+    correction_angle:i32,
+    min_correction_speed:i32,
+    max_correction_speed:i32,
+    multiplier_correction_speed:f32,
+    boost_angle:i32,
+    boost_distance:i32,
+    checkpoint_close_proximity_range: i32,
+    checkpoint_close_proximity_correction_angle: i32,
+    checkpoint_close_proximity_correction_speed: i32,
+}
+
 /**
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
@@ -37,7 +50,20 @@ fn main() {
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
+        let parameters = pod_parameters {
+            thrust: 100,
+            correction_angle: 50,
+            min_correction_speed: 25,
+            max_correction_speed: 75,
+            multiplier_correction_speed: 0.75,
+            boost_angle: 25,
+            boost_distance: 7000,
+            checkpoint_close_proximity_range: 1500,
+            checkpoint_close_proximity_correction_angle: 30,
+            checkpoint_close_proximity_correction_speed: 10,
+        };
         game_loop(
+            parameters,
             x,
             y,
             next_checkpoint_x,
@@ -52,6 +78,7 @@ fn main() {
 
 #[allow(clippy::too_many_arguments)]
 fn game_loop(
+    mut parameters: pod_parameters,
     player_x: i32,
     player_y: i32,
     next_checkpoint_x:i32,
@@ -61,50 +88,37 @@ fn game_loop(
     opponent_x: i32,
     opponent_y: i32
 ) {
-    let mut thrust = 100;
-
-    let correction_angle = 50;
-    let min_correction_speed = 25;
-    let max_correction_speed = 75;
-    let multiplier_correction_speed = 0.75;
-
-    let boost_angle = 25; // 20?
-    let boost_distance = 7000; // 6500?
-
-    let checkpoint_close_proximity_range = 1500; // 2000?
-    let checkpoint_close_proximity_correction_angle = 30;
-    let checkpoint_close_proximity_correction_speed = 10;
 
     // Thrust adjustments if not facing correct direction
-    if next_checkpoint_angle > correction_angle
-        || next_checkpoint_angle < -correction_angle {
-        thrust = cmp::min(
+    if next_checkpoint_angle > parameters.correction_angle
+        || next_checkpoint_angle < -parameters.correction_angle {
+        parameters.thrust = cmp::min(
             cmp::max(
                 ((next_checkpoint_angle % 100).abs() as f32
-                    * multiplier_correction_speed).round() as i32,
-                min_correction_speed,
+                    * parameters.multiplier_correction_speed).round() as i32,
+                parameters.min_correction_speed,
             ),
-            max_correction_speed,
+            parameters.max_correction_speed,
         );
-    } else if next_checkpoint_dist >= boost_distance
-        && (next_checkpoint_angle < boost_angle
-        || next_checkpoint_angle > -boost_angle) {
+    } else if next_checkpoint_dist >= parameters.boost_distance
+        && (next_checkpoint_angle < parameters.boost_angle
+        || next_checkpoint_angle > -parameters.boost_angle) {
         // BOOST
         println!("{} {} BOOST", next_checkpoint_x, next_checkpoint_y);
         return;
     }
 
     // Thrust adjustments if close to checkpoint
-    if next_checkpoint_dist < checkpoint_close_proximity_range {
+    if next_checkpoint_dist < parameters.checkpoint_close_proximity_range {
         // if next_checkpoint_dist < 250 { thrust = 0 } else { thrust = next_checkpoint_dist / 60; }
         // 30 => 16,649
-        if next_checkpoint_angle > checkpoint_close_proximity_correction_angle
-            || next_checkpoint_angle < -checkpoint_close_proximity_correction_angle {
-            thrust = checkpoint_close_proximity_correction_speed;
+        if next_checkpoint_angle > parameters.checkpoint_close_proximity_correction_angle
+            || next_checkpoint_angle < -parameters.checkpoint_close_proximity_correction_angle {
+            parameters.thrust = parameters.checkpoint_close_proximity_correction_speed;
         } else {
-            thrust = cmp::max(
+            parameters.thrust = cmp::max(
                 (next_checkpoint_dist & 100).abs(),
-                min_correction_speed,
+                parameters.min_correction_speed,
             );
         }
     }
@@ -112,5 +126,5 @@ fn game_loop(
     // You have to output the target position
     // followed by the power (0 <= thrust <= 100)
     // i.e.: "x y thrust"
-    println!("{} {} {}", next_checkpoint_x, next_checkpoint_y, thrust);
+    println!("{} {} {}", next_checkpoint_x, next_checkpoint_y, parameters.thrust);
 }
