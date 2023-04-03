@@ -77,7 +77,7 @@ impl Checkpoint {
 /// Calculates the pythagorean theorem
 /// c^2 = a^2 + b^2 => c = sqrt(a^2 + b^2)
 fn pythagorean_theorem(a: i32, b: i32) -> i32 {
-    return ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32;
+    ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32
 }
 
 fn get_max_distance_checkpoint(checkpoints: &Vec<Checkpoint>) -> Option<&Checkpoint> {
@@ -103,7 +103,7 @@ fn should_boost(
     game_parameters: &GameParameters,
     pod_parameters: &PodParameters,
 ) -> bool {
-    if let Some(checkpoint) = get_max_distance_checkpoint(&checkpoints) {
+    if let Some(checkpoint) = get_max_distance_checkpoint(checkpoints) {
         if checkpoints.len() > 1
             && checkpoints_mapped
             && game_parameters.next_checkpoint_dist > pod_parameters.min_boost_distance
@@ -114,7 +114,7 @@ fn should_boost(
             return true;
         }
     }
-    return false;
+    false
 }
 
 /**
@@ -157,14 +157,14 @@ fn main() {
         };
         let pod_parameters = PodParameters {
             thrust: 100,
-            correction_angle: 50,
+            correction_angle: 45,
             min_correction_speed: 25,
             max_correction_speed: 75,
             multiplier_correction_speed: 0.75,
-            boost_angle: 30,
-            min_boost_distance: 7000,
+            boost_angle: 20,
+            min_boost_distance: 0,
             checkpoint_close_proximity_range: 2000,
-            checkpoint_close_proximity_correction_angle: 30,
+            checkpoint_close_proximity_correction_angle: 25,
             checkpoint_close_proximity_correction_speed: 15,
         };
         let (new_checkpoints, new_checkpoints_mapped) = game_loop(
