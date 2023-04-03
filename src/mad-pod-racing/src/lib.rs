@@ -24,7 +24,7 @@ struct PodParameters {
     max_correction_speed: i32,
     multiplier_correction_speed: f32,
     boost_angle: i32,
-    boost_distance: i32,
+    min_boost_distance: i32,
     checkpoint_close_proximity_range: i32,
     checkpoint_close_proximity_correction_angle: i32,
     checkpoint_close_proximity_correction_speed: i32,
@@ -82,14 +82,15 @@ fn pythagorean_theorem(a: i32, b: i32) -> i32 {
     return ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32;
 }
 
-fn get_max_distance_checkpoint(checkpoints: &Vec<Checkpoint>) -> Option<Checkpoint> {
-    let mut highest_distance: (Option<Checkpoint>, i32) = (None, 0);
-    for checkpoint in checkpoints {
+fn get_max_distance_checkpoint(checkpoints: &Vec<Checkpoint>) -> Option<&Checkpoint> {
+    /*for checkpoint in checkpoints {
         if checkpoint.distance_prev_checkpoint > highest_distance.1 {
             highest_distance = (Some(*checkpoint), checkpoint.distance_prev_checkpoint);
         }
-    }
-    highest_distance.0
+    }*/
+    if checkpoints.len() < 2 || checkpoints[0].distance_prev_checkpoint == 0 { return None; }
+    let highest_distance = checkpoints.iter().max_by_key(|p| p.distance_prev_checkpoint);
+    highest_distance
 }
 
 /// Checking if we're on the longest straight to the next checkpoint
@@ -107,8 +108,9 @@ fn should_boost (
     if let Some(checkpoint) = get_max_distance_checkpoint(&checkpoints) {
         if checkpoints.len() > 1
             && checkpoints_mapped
-            && checkpoint.distance_prev_checkpoint != 0
+            && game_parameters.next_checkpoint_dist > pod_parameters.min_boost_distance
             && (game_parameters.next_checkpoint_angle < pod_parameters.boost_angle || game_parameters.next_checkpoint_angle > -pod_parameters.boost_angle)
+            && checkpoint.distance_prev_checkpoint != 0
             && checkpoint.position_x == game_parameters.next_checkpoint_x
             && checkpoint.position_y == game_parameters.next_checkpoint_y {
             return true;
@@ -162,7 +164,7 @@ fn main() {
             max_correction_speed: 75,
             multiplier_correction_speed: 0.75,
             boost_angle: 30,
-            boost_distance: 7000,
+            min_boost_distance: 7000,
             checkpoint_close_proximity_range: 2000,
             checkpoint_close_proximity_correction_angle: 30,
             checkpoint_close_proximity_correction_speed: 15,
@@ -201,6 +203,7 @@ fn game_loop(
         game_parameters.next_checkpoint_x,
         game_parameters.next_checkpoint_y
     );
+    eprintln!("Checkpoint 0: {:?}", &checkpoints[0].distance_prev_checkpoint);
 
     // Thrust adjustments if not facing correct direction
     if game_parameters.next_checkpoint_angle > pod_parameters.correction_angle
