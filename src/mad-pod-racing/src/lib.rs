@@ -117,6 +117,32 @@ fn should_boost(
     false
 }
 
+fn get_correction_speed(
+    game_parameters: &GameParameters,
+    pod_parameters: &PodParameters,
+) -> i32 {
+    cmp::min(
+        cmp::max(
+            ((game_parameters.next_checkpoint_angle % 100).abs() as f32
+                * pod_parameters.multiplier_correction_speed).round() as i32,
+            pod_parameters.min_correction_speed,
+        ),
+        pod_parameters.max_correction_speed,
+    )
+}
+
+fn get_correction_speed_close_corner(game_parameters: &GameParameters, pod_parameters: &PodParameters) -> i32{
+    // if next_checkpoint_dist < 250 { thrust = 0 } else { thrust = next_checkpoint_dist / 60; }
+    if game_parameters.next_checkpoint_angle > pod_parameters.checkpoint_close_proximity_correction_angle
+        || game_parameters.next_checkpoint_angle < -pod_parameters.checkpoint_close_proximity_correction_angle {
+        return pod_parameters.checkpoint_close_proximity_correction_speed;
+    }
+    cmp::max(
+        (game_parameters.next_checkpoint_dist & 100).abs(),
+        pod_parameters.min_correction_speed,
+    )
+}
+
 /**
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
@@ -158,7 +184,7 @@ fn main() {
         let pod_parameters = PodParameters {
             thrust: 100,
             correction_angle: 45,
-            min_correction_speed: 25,
+            min_correction_speed: 20,
             max_correction_speed: 75,
             multiplier_correction_speed: 0.75,
             boost_angle: 20,
@@ -206,14 +232,7 @@ fn game_loop(
     // Thrust adjustments if not facing correct direction
     if game_parameters.next_checkpoint_angle > pod_parameters.correction_angle
         || game_parameters.next_checkpoint_angle < -pod_parameters.correction_angle {
-        pod_parameters.thrust = cmp::min(
-            cmp::max(
-                ((game_parameters.next_checkpoint_angle % 100).abs() as f32
-                    * pod_parameters.multiplier_correction_speed).round() as i32,
-                pod_parameters.min_correction_speed,
-            ),
-            pod_parameters.max_correction_speed,
-        );
+        pod_parameters.thrust = get_correction_speed(&game_parameters, &pod_parameters);
     } else if should_boost(&checkpoints, checkpoints_mapped, &game_parameters, &pod_parameters) {
         // BOOST
         eprintln!("BOOST!");
@@ -223,17 +242,7 @@ fn game_loop(
 
     // Thrust adjustments if close to checkpoint
     if game_parameters.next_checkpoint_dist < pod_parameters.checkpoint_close_proximity_range {
-        // if next_checkpoint_dist < 250 { thrust = 0 } else { thrust = next_checkpoint_dist / 60; }
-        // 30 => 16,649
-        if game_parameters.next_checkpoint_angle > pod_parameters.checkpoint_close_proximity_correction_angle
-            || game_parameters.next_checkpoint_angle < -pod_parameters.checkpoint_close_proximity_correction_angle {
-            pod_parameters.thrust = pod_parameters.checkpoint_close_proximity_correction_speed;
-        } else {
-            pod_parameters.thrust = cmp::max(
-                (game_parameters.next_checkpoint_dist & 100).abs(),
-                pod_parameters.min_correction_speed,
-            );
-        }
+        pod_parameters.thrust = get_correction_speed_close_corner(&game_parameters, &pod_parameters);
     }
 
     // You have to output the target position
