@@ -6,7 +6,6 @@ macro_rules! parse_input {
 
 struct GameInput {
     player_position: Position,
-    opponent_position: Option<Vec<Position>>,
     speed: Speed,
     next_checkpoint_id: i32,
     next_checkpoint_dist: i32,
@@ -65,9 +64,9 @@ impl GameInput {
     fn should_boost(
         &self,
         pod_parameters: &Pod,
-        next_checkpoint: &Checkpoint,
+        next_checkpoint: &Checkpoint
     ) -> bool {
-        if &&self.next_checkpoint_dist > &&pod_parameters.min_boost_distance
+        if self.next_checkpoint_dist > pod_parameters.min_boost_distance
             && self.next_checkpoint_angle < pod_parameters.boost_angle
             && self.next_checkpoint_angle > -pod_parameters.boost_angle
             && next_checkpoint.distance_prev_checkpoint.unwrap() != 0 // ToDo: Unwrap!
@@ -78,12 +77,7 @@ impl GameInput {
     }
 
     /// Function that determines the speed used while adjusting rotation
-    ///
-    /// ToDo: Currently used as a general speed function, and works well this way.
-    ///       Though i think we can get more out of it by just using this either:
-    ///         - Below a certain distance before reaching the next checkpoint.
-    ///         - While outside of a certain angle range in relation to the next checkpoint.
-    fn get_correction_speed(
+    fn get_target_speed(
         &self,
         pod_parameters: &Pod,
     ) -> i32 {
@@ -118,7 +112,6 @@ fn get_max_distance_checkpoint(checkpoints: &Vec<Checkpoint>) -> Option<&Checkpo
     highest_distance
 }
 
-
 /// Determines the speed of the pod in the current epoch.
 fn get_pod_speed(game_parameters: &GameInput, last_pod_position: (i32, i32)) -> (i32, i32) {
     let delta_x = game_parameters.player_position.0 - last_pod_position.0;
@@ -126,9 +119,6 @@ fn get_pod_speed(game_parameters: &GameInput, last_pod_position: (i32, i32)) -> 
     eprintln!("Speed: {:?}", (delta_x, delta_y));
     (delta_x, delta_y)
 }
-
-
-
 
 /**
  * Auto-generated code below aims at helping you parse
@@ -163,12 +153,14 @@ fn main() {
         }
     }
     checkpoints[0].distance_prev_checkpoint = Option::from(pythagorean_theorem(
-        checkpoints[checkpoints.len() - 1].position.0,
-        checkpoints[checkpoints.len() - 1].position.1));
+        (checkpoints[0].position.0 - checkpoints[checkpoints.len() - 1].position.0).abs(),
+        (checkpoints[0].position.1 - checkpoints[checkpoints.len() - 1].position.1)).abs()
+    );
 
     // game loop
     loop {
         let mut pod_inputs: Vec<GameInput> = vec![];
+        let mut enemy_pod_inputs: Vec<GameInput> = vec![];
         for i in 0..2 as usize {
             let mut input_line = String::new();
             io::stdin().read_line(&mut input_line).unwrap();
@@ -182,10 +174,8 @@ fn main() {
             eprintln!("input {} {:?}", i, inputs);
 
             let target_checkpoint = checkpoints.get(next_check_point_id as usize);
-
             let pod_input = GameInput {
                 player_position: Position(x, y),
-                opponent_position: None,
                 speed: Speed(vx, vy),
                 next_checkpoint_id: next_check_point_id,
                 next_checkpoint_dist: target_checkpoint.unwrap().distance_prev_checkpoint.unwrap(), // ToDo: Unwrap!
@@ -204,8 +194,17 @@ fn main() {
             let angle_2 = parse_input!(inputs[4], i32); // angle of the opponent's pod
             let next_check_point_id_2 = parse_input!(inputs[5], i32); // next check point id of the opponent's pod
             eprintln!("input enemy {} {:?}", i, inputs);
-        }
 
+            let target_checkpoint = checkpoints.get(next_check_point_id_2 as usize);
+            let pod_input = GameInput {
+                player_position: Position(x_2, y_2),
+                speed: Speed(vx_2, vy_2),
+                next_checkpoint_id: next_check_point_id_2,
+                next_checkpoint_dist: target_checkpoint.unwrap().distance_prev_checkpoint.unwrap(), // ToDo: Unwrap!
+                next_checkpoint_angle: angle_2, // ToDo: Calc!
+            };
+            enemy_pod_inputs.extend([pod_input]);
+        }
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
@@ -229,9 +228,9 @@ fn main() {
             let (target_x, target_y) = pod.get_target_coordinates(
                 &pod_parameters,
                 &pod.speed,
-                &next_checkpoint.unwrap()
+                next_checkpoint.unwrap() // ToDo: Unwrap!
             );
-            let thrust = pod.get_correction_speed(&pod_parameters);
+            let thrust = pod.get_target_speed(&pod_parameters);
             // BOOST
             if pod.should_boost(&pod_parameters, next_checkpoint.unwrap()) { // ToDo: Unwrap!
                 println!("{} {} BOOST", target_x, target_y);
