@@ -21,17 +21,27 @@ for (let y_index = 0; y_index < height; y_index++) {
     grid[y_index] = [];
     const line: string = readline() // width characters, each either 0 or .
     console.error(line.toString())
-    const positions: string[] = line.split('');
-    positions.forEach((value, x_index) => {
+    const x_positions: string[] = line.split('');
+    x_positions.forEach((value, x_index) => {
         let isPowered: boolean;
         if (value == "0") isPowered = true;
         else isPowered = false;
-        // const newGridPosition:[number, number, boolean]
-        //     = [x_index, y_index, isPowered];
         grid[y_index].push(isPowered);
-        // grid.push(newGridPosition);
         console.error(`Storing ${x_index}, ${y_index}: ${grid[y_index][x_index]}}`);
     });
+}
+
+for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[y].length; x++) {
+        // Ignore if the current node isn't active itself.
+        if (!grid[y][x]) continue;
+        let activeNeighbors: number = 0;
+        if (x != 0 && grid[y][x-1]) activeNeighbors += 1;
+        if (y != 0 && grid[y-1][x]) activeNeighbors += 1;
+        if (x+1 != width && grid[y][x+1]) activeNeighbors += 1;
+        if (y+1 != height && grid[y+1][x]) activeNeighbors += 1;
+        console.error(`activeNeighbors ${activeNeighbors}`);
+    }
 }
 
 // Write an action using console.log()
