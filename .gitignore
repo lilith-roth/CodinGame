@@ -1,5 +1,6 @@
-target
-Cargo.lock
 poetry.lock
+yarn.lock
 venv
 tmp
+node_modules
+target
