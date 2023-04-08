@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "codingame-shadows-of-the-knight-episode-1"
+version = "0.1.0"
+description = "Code for the `Shadows of the Knight - Episode 1` game"
+authors = ["Dominique Roth <dominik@roth.systems>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flake8 = "^6.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

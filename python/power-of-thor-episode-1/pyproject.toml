@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "codingame-power-of-thor-episode-1"
+version = "0.1.0"
+description = "Code for the `Power of Thor - Episode 1` game"
+authors = ["Dominique Roth <dominik@roth.systems>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flake8 = "^6.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
