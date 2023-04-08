@@ -54,6 +54,6 @@ for (let y = 0; y < grid.length; y++) {
 
 // Three coordinates: a node, its right neighbor, its bottom neighbor
 //console.log('0 0 1 0 0 1')
-for (output in outputs) {
+outputs.forEach((output, i) => {
     console.log(output);
-}
+});
