@@ -32,16 +32,20 @@ for (let y_index = 0; y_index < height; y_index++) {
     })
 }
 
+let outputs: string[] = [];
+
 for (let y = 0; y < grid.length; y++) {
     for (let x = 0; x < grid[y].length; x++) {
         // Ignore if the current node isn't active itself.
         if (!grid[y][x]) continue
-        let activeNeighbors: number = 0
-        if (x != 0 && grid[y][x - 1]) activeNeighbors += 1
-        if (y != 0 && grid[y - 1][x]) activeNeighbors += 1
-        if (x + 1 != width && grid[y][x + 1]) activeNeighbors += 1
-        if (y + 1 != height && grid[y + 1][x]) activeNeighbors += 1
-        console.error(`activeNeighbors ${activeNeighbors}`)
+        console.error(`Node found at ${x} ${y}`);
+        let currentOutput: string = `${x} ${y} `;
+        if (x + 1 != width && grid[y][x + 1]) currentOutput += `${(x+1)} ${y} `
+        else currentOutput += "-1 -1 ";
+        if (y + 1 != height && grid[y + 1][x]) currentOutput += `${x} ${y+1}`
+        else currentOutput += "-1 -1";
+        console.error(`Adding output: ${currentOutput}`)
+        outputs.push(currentOutput);
     }
 }
 
@@ -49,4 +53,7 @@ for (let y = 0; y < grid.length; y++) {
 // To debug: console.error('Debug messages...');
 
 // Three coordinates: a node, its right neighbor, its bottom neighbor
-console.log('0 0 1 0 0 1')
+//console.log('0 0 1 0 0 1')
+for (output in outputs) {
+    console.log(output);
+}
