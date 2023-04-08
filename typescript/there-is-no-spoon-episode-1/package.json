@@ -1,0 +1,22 @@
+{
+  "name": "there-is-no-spoon-episode-1",
+  "author": {
+    "name": "Dominique Roth",
+    "email": "dominik@roth.systems",
+    "url": "https://roth.systems/"
+  },
+  "scripts": {
+    "lint": "eslint src/*.ts",
+    "prettier": "prettier -c -w src/*.ts"
+  },
+  "packageManager": "yarn@3.2.4",
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "@types/typescript": "^2.0.0",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "^5.57.1",
+    "eslint": "^8.38.0",
+    "prettier": "^2.8.7",
+    "typescript": "^5.0.4"
+  }
+}

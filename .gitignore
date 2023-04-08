@@ -3,4 +3,5 @@ yarn.lock
 venv
 tmp
 node_modules
+.yarn
 target
