@@ -12,35 +12,36 @@
 const width: number = parseInt(readline()) // the number of cells on the X axis
 const height: number = parseInt(readline()) // the number of cells on the Y axis
 
-
 // Each tuple in the grid contains x coordinate, y coordinate & if it is powered.
 const grid: boolean[][] = []
 
 console.error(`w: ${width}, h: ${height}`)
 for (let y_index = 0; y_index < height; y_index++) {
-    grid[y_index] = [];
+    grid[y_index] = []
     const line: string = readline() // width characters, each either 0 or .
     console.error(line.toString())
-    const x_positions: string[] = line.split('');
+    const x_positions: string[] = line.split('')
     x_positions.forEach((value, x_index) => {
-        let isPowered: boolean;
-        if (value == "0") isPowered = true;
-        else isPowered = false;
-        grid[y_index].push(isPowered);
-        console.error(`Storing ${x_index}, ${y_index}: ${grid[y_index][x_index]}}`);
-    });
+        let isPowered: boolean
+        if (value == '0') isPowered = true
+        else isPowered = false
+        grid[y_index].push(isPowered)
+        console.error(
+            `Storing ${x_index}, ${y_index}: ${grid[y_index][x_index]}}`
+        )
+    })
 }
 
 for (let y = 0; y < grid.length; y++) {
     for (let x = 0; x < grid[y].length; x++) {
         // Ignore if the current node isn't active itself.
-        if (!grid[y][x]) continue;
-        let activeNeighbors: number = 0;
-        if (x != 0 && grid[y][x-1]) activeNeighbors += 1;
-        if (y != 0 && grid[y-1][x]) activeNeighbors += 1;
-        if (x+1 != width && grid[y][x+1]) activeNeighbors += 1;
-        if (y+1 != height && grid[y+1][x]) activeNeighbors += 1;
-        console.error(`activeNeighbors ${activeNeighbors}`);
+        if (!grid[y][x]) continue
+        let activeNeighbors: number = 0
+        if (x != 0 && grid[y][x - 1]) activeNeighbors += 1
+        if (y != 0 && grid[y - 1][x]) activeNeighbors += 1
+        if (x + 1 != width && grid[y][x + 1]) activeNeighbors += 1
+        if (y + 1 != height && grid[y + 1][x]) activeNeighbors += 1
+        console.error(`activeNeighbors ${activeNeighbors}`)
     }
 }
 
