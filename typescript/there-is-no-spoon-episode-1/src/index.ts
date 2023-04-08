@@ -11,20 +11,30 @@
 const width: number = parseInt(readline()) // the number of cells on the X axis
 const height: number = parseInt(readline()) // the number of cells on the Y axis
 
-interface gridPosition {
-    x: number
-    y: number
-}
 
-const grid: gridPosition[] = []
+// Each tuple in the grid contains x coordinate, y coordinate & if it is powered.
+const grid: [number, number, boolean][] = []
 
 console.error(`w: ${width}, h: ${height}`)
-for (let i = 0; i < height; i++) {
+for (let y_index = 0; y_index < height; y_index++) {
     const line: string = readline() // width characters, each either 0 or .
     console.error(line.toString())
-    const position: string[] = line.split('')
+    const positions: string[] = line.split('');
+    positions.forEach((value, x_index) => {
+        let isPowered: boolean;
+        if (value == "x") isPowered = true;
+        else isPowered = false;
+        const newGridPosition:[number, number, boolean]
+            = (x_index, y_index, isPowered);
+        console.error(newGridPosition.toString());
+        grid.push(newGridPosition);
+    });
 }
 
+grid.forEach((gridPosition, index) => {
+    console.error(index);
+    console.error(`x: ${gridPosition[0]} y: ${gridPosition[1]} : ${gridPosition[2]}`);
+});
 // Write an action using console.log()
 // To debug: console.error('Debug messages...');
 
