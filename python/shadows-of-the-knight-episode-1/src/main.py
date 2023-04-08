@@ -1,3 +1,4 @@
+import math
 import sys
 
 # Auto-generated code below aims at helping you parse
@@ -42,12 +43,12 @@ while True:
     # the location of the next window Batman should jump to.
     if bomb_area_x:
         print(f'bomb_area_x: {list(bomb_area_x)}', file=sys.stderr)
-        jump_position_x = (round((bomb_area_x[0] + bomb_area_x[1]) * .5))
+        jump_position_x = (math.floor((bomb_area_x[0] + bomb_area_x[1]) * .5))
     else:
         jump_position_x = current_position[0] if current_position else x0
     if bomb_area_y:
         print(f'bomb_area_y: {list(bomb_area_y)}', file=sys.stderr)
-        jump_position_y = (round((bomb_area_y[0] + bomb_area_y[1]) * .5))
+        jump_position_y = (math.floor((bomb_area_y[0] + bomb_area_y[1]) * .5))
     else:
         jump_position_y = current_position[1] if current_position else y0
 
