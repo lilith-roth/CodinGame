@@ -40,10 +40,28 @@ for (let y = 0; y < grid.length; y++) {
         if (!grid[y][x]) continue
         console.error(`Node found at ${x} ${y}`);
         let currentOutput: string = `${x} ${y} `;
-        if (x + 1 != width && grid[y][x + 1]) currentOutput += `${(x+1)} ${y} `
-        else currentOutput += "-1 -1 ";
-        if (y + 1 != height && grid[y + 1][x]) currentOutput += `${x} ${y+1}`
-        else currentOutput += "-1 -1";
+
+        // Searching for next active neighbor on X axis
+        let foundX: boolean = false;
+        for (let i = x+1; i < width; i++) {
+            if (grid[y][i]) {
+                currentOutput += `${i} ${y} `;
+                foundX = true;
+            }
+            if (foundX) break;
+        }
+        if (!foundX) currentOutput += "-1 -1 ";
+
+        // Searching for next active neighbor on Y axis
+        let foundY: boolean = false;
+        for (let i = y+1; i < height; i++) {
+            if (grid[i][x]) {
+                currentOutput += `${x} ${i}`;
+                foundY = true;
+            }
+            if (foundY) break;
+        }
+        if (!foundY) currentOutput += "-1 -1";
         console.error(`Adding output: ${currentOutput}`)
         outputs.push(currentOutput);
     }
