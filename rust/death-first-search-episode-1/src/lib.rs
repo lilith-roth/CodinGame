@@ -5,6 +5,7 @@ macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
 
+#[derive(Debug)]
 struct Gateway(i32, i32);
 
 /**
@@ -40,6 +41,7 @@ fn main() {
         gateways.extend([Gateway(i as i32, ei)]);
     }
     eprintln!("map {:?}", b_map);
+    eprintln!("gateways {:?}", gateways);
 
     // game loop
     loop {
@@ -53,7 +55,7 @@ fn main() {
 
         // Example: 0 1 are the indices of the nodes you wish to sever the link between
         println!("{:?} {:?}",
-                 b_map.get(&gateways[0].0).unwrap(),
+                 b_map.get(&gateways[0].1).unwrap(),
                  &gateways[0].1
         );
     }
