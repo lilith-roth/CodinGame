@@ -14,13 +14,20 @@ struct Entity {
 struct Zombie {
     entity: Entity,
     position_next: Position,
-    danger_level: Option<i32>
+    distances_to_humans: Option<Vec<i32>>
 }
 
 impl Zombie {
-    fn calculate_danger_level(mut self) -> Zombie {
-        let danger_level: i32 = 0;
-        self.danger_level = Option::from(danger_level);
+    fn calculate_danger_level(mut self, humans: &Vec<Entity>) -> Zombie {
+        let mut distances: Vec<i32> = vec![];
+        for human in humans.iter() {
+            let distance_x: i32 = human.position.0 - self.entity.position.0;
+            let distance_y: i32 = human.position.1 - self.entity.position.1;
+            let distance: i32 = pythagorean_theorem(distance_x, distance_y);
+            distances.extend([distance]);
+        }
+        distances.sort();
+        self.distances_to_humans = Option::from(distances);
         self
     }
 }
@@ -73,18 +80,19 @@ fn main() {
                     position: Position(zombie_x, zombie_y)
                 },
                 position_next: Position(zombie_xnext, zombie_ynext),
-                danger_level: Option::None
+                distances_to_humans: Option::None
             };
-            let new_zombie = new_entity.calculate_danger_level();
+            let new_zombie = new_entity.calculate_danger_level(&humans);
             zombies.extend([new_zombie])
         }
+        zombies.sort_by(|a,b| a.distances_to_humans.as_ref().unwrap()[0].cmp(&b.distances_to_humans.as_ref().unwrap()[0]));
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
         println!(
             "{} {}", 
-            humans[0].position.0, 
-            humans[0].position.1
+            zombies[0].entity.position.0, 
+            zombies[0].entity.position.1
         ); // Your destination coordinates
     }
 }
