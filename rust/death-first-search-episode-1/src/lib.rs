@@ -31,10 +31,10 @@ fn main() {
         eprintln!("n2 {}", n2);
 
 
-        let mut old_entry: Vec<i32> = Clone::clone(&b_map).get_mut(&n2)
+        let mut old_entry: Vec<i32> = Clone::clone(&b_map).get_mut(&n1)
             .unwrap_or(&mut vec![]).to_owned();
-        old_entry.extend([n1]);
-        b_map.insert(n2, old_entry);
+        old_entry.extend([n2]);
+        b_map.insert(n1, old_entry);
     }
     let mut gateways: Vec<Gateway> = vec![];
     for i in 0..e as usize {
@@ -61,11 +61,12 @@ fn main() {
         let gateway_item = gateways.first().unwrap();
         eprintln!("gi {:?}", gateway_item);
         eprintln!("map {:?}", b_map);
-        let map_item = b_map.get_mut(&gateway_item.1).unwrap().pop().unwrap();
-        eprintln!("mi {}", map_item);
+        let map_item = b_map.get_mut(&gateway_item.0).unwrap().pop();
+        // eprintln!("mi {}", map_item);
         println!("{:?} {:?}",
-                 gateway_item.1,
-                 map_item,
+                //  gateway_item.1,
+                 map_item.unwrap(),
+                  gateway_item.1,
         );
     }
 }
