@@ -44,9 +44,12 @@ impl Zombie {
                 distances.extend([distance_human]);
             }
         }
+        self.distance_to_character = Option::from(distance_character);
+        if distances.len() == 0 {
+            return self;
+        }
         distances.sort();
         self.distances_to_humans = Option::from(distances);
-        self.distance_to_character = Option::from(distance_character);
         self
     }
 }
@@ -128,7 +131,7 @@ fn main() {
         zombies.sort_by(|a,b| {
             let a_human_dist = a.distances_to_humans.as_ref().unwrap_or(&vec![i32::MAX])[0];
             let b_human_dist = b.distances_to_humans.as_ref().unwrap_or(&vec![i32::MAX])[0];
-            if (a_human_dist == b_human_dist) {
+            if (a_human_dist != b_human_dist) {
                 a.distance_to_character.cmp(&b.distance_to_character)
             }
             else
