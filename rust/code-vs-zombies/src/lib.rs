@@ -54,23 +54,6 @@ impl Zombie {
     }
 }
 
-// fn get_next_zombie_to_kill(
-//     character: Position,
-//     humans: Vec<Entity>, 
-//     zombies: Vec<Zombie>
-// ) -> Zombie {
-//     for zombie in zombies.iter() {
-//         let distance_to_zombie: i32 = pythagorean_theorem(
-//             character.0 - zombie.entity.position.0, 
-//             character.1 - zombie.entity.position.1
-//         );
-//         let zombie_distances_to_humans: Vec<i32> = zombie.distances_to_humans.unwrap_or(vec![i32::MAX]);
-//         for distance in zombie_distances_to_humans.iter() {
-
-//         }
-//     }
-// }
-
 /**
  * Save humans, destroy zombies!
  **/
@@ -131,12 +114,12 @@ fn main() {
         zombies.sort_by(|a,b| {
             let a_human_dist = a.distances_to_humans.as_ref().unwrap_or(&vec![i32::MAX])[0];
             let b_human_dist = b.distances_to_humans.as_ref().unwrap_or(&vec![i32::MAX])[0];
-            if (a_human_dist != b_human_dist) {
-                a.distance_to_character.cmp(&b.distance_to_character)
+            if (a_human_dist == b_human_dist) {
+                a_human_dist.cmp(&b_human_dist)
             }
             else
             {
-                a_human_dist.cmp(&b_human_dist)
+                a.distance_to_character.cmp(&b.distance_to_character)
             }
         });
 
