@@ -38,8 +38,6 @@ impl Zombie {
             let distance_y_human: i32 = human.position.1 - self.entity.position.1;
             let distance_human: i32 = pythagorean_theorem(distance_x_human, distance_y_human);
             
-            eprintln!("dH {}", distance_human / 400);
-            eprintln!("cH {}", distance_character / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED));
             if distance_human / (ZOMBIE_KILL_RANGE+ZOMBIE_MOVE_SPEED) > distance_character / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED) {
                 distances.extend([distance_human]);
             }
