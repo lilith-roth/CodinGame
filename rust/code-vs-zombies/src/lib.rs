@@ -18,6 +18,11 @@ struct Entity {
     position: Position
 }
 
+struct Human {
+    entity: Entity,
+    zombies_facing_human: Option<i32>
+}
+
 #[derive(Clone, Debug)]
 struct Zombie {
     entity: Entity,
@@ -29,7 +34,7 @@ struct Zombie {
 impl Zombie {
     fn calculate_danger_level(
         mut self, 
-        humans: &Vec<Entity>,
+        humans: &Vec<Human>,
         character_position: Position
     ) -> Zombie {
         let distance_x_character: i32 = character_position.0 - self.entity.position.0;
@@ -37,8 +42,10 @@ impl Zombie {
         let distance_character: i32 = pythagorean_theorem(distance_x_character, distance_y_character);
         let mut distances: Vec<i32> = vec![];
         for human in humans.iter() {
-            let distance_x_human: i32 = human.position.0 - self.position_next.0;
-            let distance_y_human: i32 = human.position.1 - self.position_next.1;
+            let distance_x_human: i32 = 
+                human.entity.position.0 - self.position_next.0;
+            let distance_y_human: i32 = 
+                human.entity.position.1 - self.position_next.1;
             let distance_human: i32 = pythagorean_theorem(distance_x_human, distance_y_human);
             
             if distance_human / (ZOMBIE_KILL_RANGE+ZOMBIE_MOVE_SPEED) > distance_character / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED) {
@@ -80,7 +87,7 @@ fn main() {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let human_count = parse_input!(input_line, i32);
-        let mut humans: Vec<Entity> = vec![];
+        let mut humans: Vec<Human> = vec![];
         for i in 0..human_count as usize {
             let mut input_line = String::new();
             io::stdin().read_line(&mut input_line).unwrap();
@@ -88,9 +95,12 @@ fn main() {
             let human_id = parse_input!(inputs[0], i32);
             let human_x = parse_input!(inputs[1], i32);
             let human_y = parse_input!(inputs[2], i32);
-            let new_entity = Entity {
-                id: human_id,
-                position: Position(human_x, human_y)
+            let new_entity = Human{
+                entity: Entity {
+                    id: human_id,
+                    position: Position(human_x, human_y)
+                },
+                zombies_facing_human: Option::None
             };
             humans.extend([new_entity]);
         }
@@ -137,20 +147,54 @@ fn main() {
             }
         });
 
-        let mut target: Option<&Zombie> = None;
+        let mut target: Option<Position> = None;
         for zombie in zombies.iter() {
             if zombie.is_zombie_targetting_character(character_position) {
-                target = Option::from(zombie);
+                target = Option::from(zombie.entity.position);
                 break;
             }
         }
 
+        let mut new_humans: Vec<Human> = vec![];
+        for human in humans.iter() {
+            let mut new_human: Human = Human {
+                entity: human.entity,
+                zombies_facing_human: Option::None
+            };
+            for zombie in zombies.iter() {
+                if zombie.is_zombie_targetting_character(human.entity.position) {
+                    match human.zombies_facing_human {
+                        Some (amount) => new_human = {
+                            Human {
+                                entity: human.entity,
+                                zombies_facing_human: Option::from(amount + 1)
+                            }
+                        },
+                        None => new_human = Human {
+                                entity: human.entity,
+                                zombies_facing_human: Option::from(1)
+                        }                        
+                    }
+                }
+            }
+            new_humans.extend([new_human]);
+        }
+
+        eprintln!("Humans {}", new_humans.len());
+        for human in new_humans.iter() {
+            eprintln!("Facing: {}", human.zombies_facing_human.unwrap_or(-1));
+            if human.zombies_facing_human.unwrap_or(-1) > 0 {
+                target = Option::from(human.entity.position);
+            }
+        }
+
         match target {
-            Some(zombie) => {
+            Some(position) => {
+                eprintln!("Target {:?}", position);
                 println!(
                     "{} {}", 
-                    zombie.entity.position.0, 
-                    zombie.entity.position.1
+                    position.0, 
+                    position.1
                 );
             },
             None => {
