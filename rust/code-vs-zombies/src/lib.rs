@@ -9,13 +9,16 @@ macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
 
+#[derive(Clone, Copy, Debug)]
 struct Position(i32, i32);
 
+#[derive(Clone, Copy, Debug)]
 struct Entity {
     id: i32,
     position: Position
 }
 
+#[derive(Clone, Debug)]
 struct Zombie {
     entity: Entity,
     position_next: Position,
@@ -34,8 +37,8 @@ impl Zombie {
         let distance_character: i32 = pythagorean_theorem(distance_x_character, distance_y_character);
         let mut distances: Vec<i32> = vec![];
         for human in humans.iter() {
-            let distance_x_human: i32 = human.position.0 - self.entity.position.0;
-            let distance_y_human: i32 = human.position.1 - self.entity.position.1;
+            let distance_x_human: i32 = human.position.0 - self.position_next.0;
+            let distance_y_human: i32 = human.position.1 - self.position_next.1;
             let distance_human: i32 = pythagorean_theorem(distance_x_human, distance_y_human);
             
             if distance_human / (ZOMBIE_KILL_RANGE+ZOMBIE_MOVE_SPEED) > distance_character / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED) {
@@ -50,6 +53,12 @@ impl Zombie {
         self.distances_to_humans = Option::from(distances);
         self
     }
+
+    fn is_zombie_targetting_character(&self, character_position: Position) -> bool {
+        distance(character_position, self.position_next) 
+            + distance(self.entity.position, self.position_next) 
+        == distance(character_position, self.entity.position)
+    }
 }
 
 /**
@@ -62,8 +71,12 @@ fn main() {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let inputs = input_line.split(" ").collect::<Vec<_>>();
-        let x = parse_input!(inputs[0], i32);
-        let y = parse_input!(inputs[1], i32);
+        // let x = parse_input!(inputs[0], i32);
+        // let y = parse_input!(inputs[1], i32);
+        let character_position: Position = Position(
+            parse_input!(inputs[0], i32),
+            parse_input!(inputs[1], i32)
+        );
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let human_count = parse_input!(input_line, i32);
@@ -105,7 +118,10 @@ fn main() {
             };
             let new_zombie = new_entity.calculate_danger_level(
                 &humans,
-                Position(x, y)
+                Position(
+                    character_position.0, 
+                    character_position.1
+                )
             );
             zombies.extend([new_zombie])
         }
@@ -121,16 +137,47 @@ fn main() {
             }
         });
 
+        let mut target: Option<&Zombie> = None;
+        for zombie in zombies.iter() {
+            if zombie.is_zombie_targetting_character(character_position) {
+                target = Option::from(zombie);
+                break;
+            }
+        }
+
+        match target {
+            Some(zombie) => {
+                println!(
+                    "{} {}", 
+                    zombie.entity.position.0, 
+                    zombie.entity.position.1
+                );
+            },
+            None => {
+                let zombie: &Zombie = &zombies[0];
+                println!(
+                    "{} {}", 
+                    zombie.entity.position.0, 
+                    zombie.entity.position.1
+                );
+            }
+        }
+
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        println!(
-            "{} {}", 
-            zombies[0].entity.position.0, 
-            zombies[0].entity.position.1
-        ); // Your destination coordinates
+        // println!(
+        //     "{} {}", 
+        //     target.entity.position.0, 
+        //     target.entity.position.1
+        // ); 
+        // Your destination coordinates
     }
 }
 
 fn pythagorean_theorem(a: i32, b:i32) -> i32 {
     ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32
+}
+
+fn distance(a: Position, b: Position) -> i32 {
+    (((a.0 - b.0) + (a.1 - b.1))as f32).sqrt() as i32
 }
