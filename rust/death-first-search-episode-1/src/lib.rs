@@ -5,9 +5,6 @@ macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
 
-#[derive(Debug, Clone, Copy)]
-struct Gateway(i32, i32);
-
 /**
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
@@ -36,14 +33,13 @@ fn main() {
         old_entry.extend([n2]);
         b_map.insert(n1, old_entry);
     }
-    let mut gateways: Vec<Gateway> = vec![];
+    let mut gateways: Vec<i32> = vec![];
     for i in 0..e as usize {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let ei = parse_input!(input_line, i32); // the index of a gateway node
-        eprintln!("i2 {}", i);
         eprintln!("ei {} {}", i, ei);
-        gateways.extend([Gateway(i as i32, ei)]);
+        gateways.extend([ei]);
     }
     eprintln!("gateways {:?}", gateways);
 
@@ -61,12 +57,21 @@ fn main() {
         let gateway_item = gateways.first().unwrap();
         eprintln!("gi {:?}", gateway_item);
         eprintln!("map {:?}", b_map);
-        let map_item = b_map.get_mut(&gateway_item.0).unwrap().pop();
-        // eprintln!("mi {}", map_item);
+        if b_map.get(&si).is_some() && b_map.get(&si).unwrap().contains(gateway_item) {
+            println!("{:?} {:?}",
+                     si,
+                     gateway_item,
+            );
+            continue;
+        }
+        let map_item = &mut b_map.get_mut(gateway_item).unwrap();
+        eprintln!("mi {:?}", map_item);
         println!("{:?} {:?}",
-                //  gateway_item.1,
-                 map_item.unwrap(),
-                  gateway_item.1,
+                 map_item.pop().unwrap(),
+                 gateway_item,
         );
+        if map_item.is_empty() {
+            b_map.remove_entry(gateway_item);
+        }
     }
 }
