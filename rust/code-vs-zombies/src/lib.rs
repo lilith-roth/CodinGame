@@ -12,14 +12,14 @@ macro_rules! parse_input {
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Position(i32, i32);
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 struct Entity {
     id: i32,
     position: Position,
     is_human: bool,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 struct Human {
     entity: Entity,
     zombies_facing_human: Option<i32>,
@@ -155,25 +155,32 @@ fn main() {
                 .cmp(&calculate_distance(a.entity.position, character_position)));
 
         let mut target: Option<Position> = None;
-        for zombie in zombies.iter() {
-            if zombie.is_zombie_targeting_entity(character_position) {
-                target = Option::from(zombie.entity.position);
-                break;
-            }
-        }
+        // for zombie in zombies.iter() {
+        //     if zombie.is_zombie_targeting_entity(character_position) {
+        //         target = Option::from(zombie.entity.position);
+        //         break;
+        //     }
+        // }
 
-        // humans.sort_by(|a, b|
-        //     calculate_distance(b.entity.position, character_position)
-        //     .cmp(&calculate_distance(a.entity.position, character_position)));
+        humans.sort_by(|a, b|
+            calculate_distance(b.entity.position, character_position)
+            .cmp(&calculate_distance(a.entity.position, character_position)));
 
-        for human in humans.iter() {
+        let humansLoopVec: Vec<Human> = humans.clone();
+        'outer: for human in humansLoopVec.iter() {
             let mut new_human: Human = human.clone();
             for zombie in zombies.iter() {
+                if !zombie.clone().can_character_save_in_time(character_position, new_human.entity.position) {
+                    let index = humans.iter().position(|x| x == human).unwrap();
+                    humans.remove(index);
+                    continue 'outer
+                }
+
                 // eprintln!("Dist {}", calculate_distance(new_human.entity.position, zombie.entity.position));
                 if (zombie.is_zombie_targeting_entity(new_human.entity.position)
                     /*|| is_in_distance(new_human.entity.position, zombie.entity.position, 3000)*/
                     /*|| is_in_distance(character_position, zombie.entity.position, 3000) */)
-                    && zombie.clone().can_character_save_in_time(character_position, new_human.entity.position) {
+                     {
                     eprintln!("Potential target {:?}", new_human.entity.position);
                     match new_human.zombies_facing_human {
                         Some(amount) => new_human = {
@@ -223,27 +230,21 @@ fn main() {
                         )
                     }
                     None => {
-                        let human: &Human = &humans[0];
-                        target = Option::from(human.entity.position);
+                        if (humans.len() > 0) {
+                            target = Option::from(humans[0].entity.position);
+                        } else {
+                            target = Option::from(zombies[0].entity.position);
+                        }
                         println!(
                             "{} {}",
-                            human.entity.position.0,
-                            human.entity.position.1
+                            target.unwrap().0,
+                            target.unwrap().1
                         );
                     }
                 }
             }
         }
         last_target = target;
-
-        // Write an action using println!("message...");
-        // To debug: eprintln!("Debug message...");
-        // println!(
-        //     "{} {}", 
-        //     target.entity.position.0, 
-        //     target.entity.position.1
-        // ); 
-        // Your destination coordinates
     }
 }
 
