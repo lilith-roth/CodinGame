@@ -15,8 +15,7 @@ struct Position(i32, i32);
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Entity {
     id: i32,
-    position: Position,
-    is_human: bool,
+    position: Position
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -28,8 +27,7 @@ struct Human {
 #[derive(Clone, Debug)]
 struct Zombie {
     entity: Entity,
-    position_next: Position,
-    distances_to_humans: Option<Vec<i32>>,
+    position_next: Position
 }
 
 impl Zombie {
@@ -60,8 +58,6 @@ fn main() {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let inputs = input_line.split(' ').collect::<Vec<_>>();
-        // let x = parse_input!(inputs[0], i32);
-        // let y = parse_input!(inputs[1], i32);
         let character_position: Position = Position(
             parse_input!(inputs[0], i32),
             parse_input!(inputs[1], i32),
@@ -80,8 +76,7 @@ fn main() {
             let new_entity = Human {
                 entity: Entity {
                     id: human_id,
-                    position: Position(human_x, human_y),
-                    is_human: true,
+                    position: Position(human_x, human_y)
                 },
                 zombies_facing_human: None,
             };
@@ -103,11 +98,9 @@ fn main() {
             let new_zombie = Zombie {
                 entity: Entity {
                     id: zombie_id,
-                    position: Position(zombie_x, zombie_y),
-                    is_human: false,
+                    position: Position(zombie_x, zombie_y)
                 },
                 position_next: Position(zombie_xnext, zombie_ynext),
-                distances_to_humans: None,
             };
             zombies.extend([new_zombie])
         }
@@ -153,8 +146,7 @@ fn main() {
             eprintln!("Facing: {}", check_human.zombies_facing_human.unwrap_or(-1));
             if check_human.zombies_facing_human.unwrap_or(-1) > 0 {
                 target = Option::from(check_human.entity.position);
-                if check_human.entity.is_human
-                    && Option::from(check_human.entity.position) == last_target {
+                if Option::from(check_human.entity.position) == last_target {
                     break;
                 }
             }
