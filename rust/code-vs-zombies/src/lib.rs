@@ -231,7 +231,7 @@ fn are_all_remaining_zombies_grouped(zombies: &[Zombie]) -> bool {
             if !is_in_distance(
                 zombie.entity.position,
                 other_zombie.entity.position,
-                1000,
+                1500,
             ) {
                 grouped = false;
                 break 'outer;
