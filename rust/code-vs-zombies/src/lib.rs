@@ -15,19 +15,19 @@ struct Position(i32, i32);
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Entity {
     id: i32,
-    position: Position
+    position: Position,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 struct Human {
     entity: Entity,
     zombies_facing_human: Option<i32>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 struct Zombie {
     entity: Entity,
-    position_next: Position
+    position_next: Position,
 }
 
 impl Zombie {
@@ -36,9 +36,15 @@ impl Zombie {
         let character_distance = calculate_distance(character_position, target_position);
         let a = target_distance / (ZOMBIE_KILL_RANGE + ZOMBIE_MOVE_SPEED);
         let b = character_distance / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED);
-        eprintln!("a {} | b {} | {}", a, b, target_distance / (ZOMBIE_KILL_RANGE + ZOMBIE_MOVE_SPEED) > character_distance / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED));
-        target_distance / (ZOMBIE_KILL_RANGE + ZOMBIE_MOVE_SPEED)
-            > character_distance / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED)
+        let can_be_saved = target_distance / (ZOMBIE_KILL_RANGE + ZOMBIE_MOVE_SPEED) > character_distance / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED);
+        eprintln!("({}, {}): a {} | b {} | {}",
+                  target_position.0,
+                  target_position.1,
+                  a,
+                  b,
+                  can_be_saved
+        );
+        can_be_saved
     }
 
     fn is_zombie_targeting_entity(&self, target_entity_position: Position) -> bool {
@@ -76,7 +82,7 @@ fn main() {
             let new_entity = Human {
                 entity: Entity {
                     id: human_id,
-                    position: Position(human_x, human_y)
+                    position: Position(human_x, human_y),
                 },
                 zombies_facing_human: None,
             };
@@ -98,7 +104,7 @@ fn main() {
             let new_zombie = Zombie {
                 entity: Entity {
                     id: zombie_id,
-                    position: Position(zombie_x, zombie_y)
+                    position: Position(zombie_x, zombie_y),
                 },
                 position_next: Position(zombie_xnext, zombie_ynext),
             };
@@ -151,7 +157,8 @@ fn main() {
                 }
             }
         }
-        if zombies.len() == 1 {
+        eprintln!("All grouped {}", are_all_remaining_zombies_grouped(&zombies));
+        if zombies.len() == 1 || are_all_remaining_zombies_grouped(&zombies) {
             target = Option::from(zombies[0].entity.position);
         }
 
@@ -165,8 +172,10 @@ fn main() {
                 );
             }
             None => {
+                eprintln!("No target!");
                 match last_target {
                     Some(position) => {
+                        eprintln!("Last Target");
                         target = Option::from(position);
                         println!(
                             "{} {}",
@@ -175,6 +184,7 @@ fn main() {
                         )
                     }
                     None => {
+                        eprintln!("No target found! Defaulting");
                         if !humans.is_empty() {
                             target = Option::from(humans[0].entity.position);
                         } else {
@@ -202,5 +212,36 @@ fn calculate_distance(a: Position, b: Position) -> i32 {
 }
 
 fn is_in_distance(a: Position, b: Position, distance: i32) -> bool {
-    distance < calculate_distance(a, b)
+    distance >= calculate_distance(a, b)
 }
+
+fn are_all_remaining_zombies_grouped(zombies: &[Zombie]) -> bool {
+    let mut grouped = true;
+
+    'outer: for (i, zombie) in zombies.iter().enumerate() {
+        for other_zombie in zombies.iter().skip(i + 1) {
+            eprintln!("comp: {:?} {:?} {}",
+                      zombie.entity.position,
+                      other_zombie.entity.position,
+                      calculate_distance(
+                          zombie.entity.position,
+                          other_zombie.entity.position,
+                      )
+            );
+            if !is_in_distance(
+                zombie.entity.position,
+                other_zombie.entity.position,
+                1000,
+            ) {
+                grouped = false;
+                break 'outer;
+            }
+        }
+        if !grouped {
+            break;
+        }
+    }
+
+    grouped
+}
+
