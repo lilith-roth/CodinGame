@@ -1,3 +1,7 @@
+mod structs;
+mod math;
+mod utils;
+
 use std::io;
 
 const CHARACTER_MOVE_SPEED: i32 = 1000;
@@ -9,69 +13,24 @@ macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-struct Position(i32, i32);
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-struct Entity {
-    id: i32,
-    position: Position,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-struct Human {
-    entity: Entity,
-    zombies_facing_human: Option<i32>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-struct Zombie {
-    entity: Entity,
-    position_next: Position,
-}
-
-impl Zombie {
-    fn can_character_save_in_time(self, character_position: Position, target_position: Position) -> bool {
-        let target_distance = calculate_distance(self.entity.position, target_position);
-        let character_distance = calculate_distance(character_position, target_position);
-        let a = target_distance / (ZOMBIE_KILL_RANGE + ZOMBIE_MOVE_SPEED);
-        let b = character_distance / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED);
-        let can_be_saved = target_distance / (ZOMBIE_KILL_RANGE + ZOMBIE_MOVE_SPEED) > character_distance / (CHARACTER_KILL_RANGE + CHARACTER_MOVE_SPEED);
-        eprintln!("({}, {}): a {} | b {} | {}",
-                  target_position.0,
-                  target_position.1,
-                  a,
-                  b,
-                  can_be_saved
-        );
-        can_be_saved
-    }
-
-    fn is_zombie_targeting_entity(&self, target_entity_position: Position) -> bool {
-        calculate_distance(target_entity_position, self.position_next)
-            + calculate_distance(self.entity.position, self.position_next)
-            == calculate_distance(target_entity_position, self.entity.position)
-    }
-}
-
 /**
  * Save humans, destroy zombies!
  **/
 fn main() {
-    let mut last_target: Option<Position> = None;
+    let mut last_target: Option<structs::Position> = None;
     // game loop
     loop {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let inputs = input_line.split(' ').collect::<Vec<_>>();
-        let character_position: Position = Position(
+        let character_position: structs::Position = structs::Position(
             parse_input!(inputs[0], i32),
             parse_input!(inputs[1], i32),
         );
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let human_count = parse_input!(input_line, i32);
-        let mut humans: Vec<Human> = vec![];
+        let mut humans: Vec<structs::Human> = vec![];
         for _i in 0..human_count as usize {
             let mut input_line = String::new();
             io::stdin().read_line(&mut input_line).unwrap();
@@ -79,10 +38,10 @@ fn main() {
             let human_id = parse_input!(inputs[0], i32);
             let human_x = parse_input!(inputs[1], i32);
             let human_y = parse_input!(inputs[2], i32);
-            let new_entity = Human {
-                entity: Entity {
+            let new_entity = structs::Human {
+                entity: structs::Entity {
                     id: human_id,
-                    position: Position(human_x, human_y),
+                    position: structs::Position(human_x, human_y),
                 },
                 zombies_facing_human: None,
             };
@@ -91,7 +50,7 @@ fn main() {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let zombie_count = parse_input!(input_line, i32);
-        let mut zombies: Vec<Zombie> = vec![];
+        let mut zombies: Vec<structs::Zombie> = vec![];
         for _i in 0..zombie_count as usize {
             let mut input_line = String::new();
             io::stdin().read_line(&mut input_line).unwrap();
@@ -101,29 +60,29 @@ fn main() {
             let zombie_y = parse_input!(inputs[2], i32);
             let zombie_xnext = parse_input!(inputs[3], i32);
             let zombie_ynext = parse_input!(inputs[4], i32);
-            let new_zombie = Zombie {
-                entity: Entity {
+            let new_zombie = structs::Zombie {
+                entity: structs::Entity {
                     id: zombie_id,
-                    position: Position(zombie_x, zombie_y),
+                    position: structs::Position(zombie_x, zombie_y),
                 },
-                position_next: Position(zombie_xnext, zombie_ynext),
+                position_next: structs::Position(zombie_xnext, zombie_ynext),
             };
             zombies.extend([new_zombie])
         }
 
         zombies.sort_by(|a, b|
-            calculate_distance(b.entity.position, character_position)
-                .cmp(&calculate_distance(a.entity.position, character_position)));
+            math::calculate_distance(b.entity.position, character_position)
+                .cmp(&math::calculate_distance(a.entity.position, character_position)));
 
-        let mut target: Option<Position> = None;
+        let mut target: Option<structs::Position> = None;
 
         humans.sort_by(|a, b|
-            calculate_distance(b.entity.position, character_position)
-                .cmp(&calculate_distance(a.entity.position, character_position)));
+            math::calculate_distance(b.entity.position, character_position)
+                .cmp(&math::calculate_distance(a.entity.position, character_position)));
 
-        let humans_loop_vec: Vec<Human> = humans.clone();
+        let humans_loop_vec: Vec<structs::Human> = humans.clone();
         'outer: for human in humans_loop_vec.iter() {
-            let mut new_human: Human = *human;
+            let mut new_human: structs::Human = *human;
             for zombie in zombies.iter() {
                 if !zombie.clone().can_character_save_in_time(character_position, new_human.entity.position) {
                     let index = humans.iter().position(|x| x == human).unwrap();
@@ -136,19 +95,19 @@ fn main() {
                     eprintln!("Potential target {:?}", new_human.entity.position);
                     match new_human.zombies_facing_human {
                         Some(amount) => new_human = {
-                            Human {
+                            structs::Human {
                                 entity: new_human.entity,
                                 zombies_facing_human: Option::from(amount + 1),
                             }
                         },
-                        None => new_human = Human {
+                        None => new_human = structs::Human {
                             entity: new_human.entity,
                             zombies_facing_human: Option::from(1),
                         }
                     }
                 }
             }
-            let check_human: Human = new_human;
+            let check_human: structs::Human = new_human;
             eprintln!("Facing: {}", check_human.zombies_facing_human.unwrap_or(-1));
             if check_human.zombies_facing_human.unwrap_or(-1) > 0 {
                 target = Option::from(check_human.entity.position);
@@ -157,8 +116,8 @@ fn main() {
                 }
             }
         }
-        eprintln!("All grouped {}", are_all_remaining_zombies_grouped(&zombies));
-        if zombies.len() == 1 || are_all_remaining_zombies_grouped(&zombies) {
+        eprintln!("All grouped {}", utils::are_all_remaining_zombies_grouped(&zombies));
+        if zombies.len() == 1 || utils::are_all_remaining_zombies_grouped(&zombies) {
             target = Option::from(zombies[0].entity.position);
         }
 
@@ -202,46 +161,3 @@ fn main() {
         last_target = target;
     }
 }
-
-fn calculate_pythagorean_theorem(a: i32, b: i32) -> i32 {
-    ((a.pow(2) + b.pow(2)) as f32).sqrt() as i32
-}
-
-fn calculate_distance(a: Position, b: Position) -> i32 {
-    ((((a.0 - b.0).pow(2)) + ((a.1 - b.1).pow(2))) as f32).sqrt() as i32
-}
-
-fn is_in_distance(a: Position, b: Position, distance: i32) -> bool {
-    distance >= calculate_distance(a, b)
-}
-
-fn are_all_remaining_zombies_grouped(zombies: &[Zombie]) -> bool {
-    let mut grouped = true;
-
-    'outer: for (i, zombie) in zombies.iter().enumerate() {
-        for other_zombie in zombies.iter().skip(i + 1) {
-            eprintln!("comp: {:?} {:?} {}",
-                      zombie.entity.position,
-                      other_zombie.entity.position,
-                      calculate_distance(
-                          zombie.entity.position,
-                          other_zombie.entity.position,
-                      )
-            );
-            if !is_in_distance(
-                zombie.entity.position,
-                other_zombie.entity.position,
-                1500,
-            ) {
-                grouped = false;
-                break 'outer;
-            }
-        }
-        if !grouped {
-            break;
-        }
-    }
-
-    grouped
-}
-
